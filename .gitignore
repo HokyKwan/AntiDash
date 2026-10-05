@@ -1,0 +1,37 @@
+# Zephyr / west
+build/
+twister-out*/
+twister-out*/
+
+# CMake / Ninja (if generated outside build/)
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+build.ninja
+.ninja_deps
+.ninja_log
+compile_commands.json
+.cache/
+
+# Firmware artifacts
+*.o
+*.obj
+*.a
+*.elf
+*.bin
+*.hex
+*.map
+*.lst
+*.d
+*.su
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# Editor / OS
+.vscode/
+*.swp
+*~
+.DS_Store
