@@ -5,6 +5,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <zephyr/dt-bindings/led/led.h>
+
+/ {
+    aliases {
+        rgb-led = &rgb_led;
+    };
+};
+
 &flash0 {
     reg = <0x0 DT_SIZE_M(16)>;
     ranges = <0x0 0x0 DT_SIZE_M(16)>;
@@ -12,4 +20,30 @@
 
 &psram0 {
     size = <DT_SIZE_M(8)>;
+};
+
+&i2s0_default {
+    group1 {
+        pinmux = <I2S0_O_SD_GPIO48>;
+    };
+};
+
+i2s_led: &i2s0 {
+    status = "okay";
+    dmas = <&dma 3>;
+    dma-names = "tx";
+
+    rgb_led: ws2812@0 {
+        compatible = "worldsemi,ws2812-i2s";
+        reg = <0>;
+        chain-length = <1>;
+        color-mapping = <LED_COLOR_ID_GREEN
+                            LED_COLOR_ID_RED
+                            LED_COLOR_ID_BLUE>;
+        reset-delay = <500>;
+    };
+};
+
+&dma {
+    status = "okay";
 };
