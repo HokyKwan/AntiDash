@@ -11,5 +11,6 @@ target_include_directories(app PRIVATE inc)
 target_sources(app PRIVATE
     src/main.c
     src/led.c
+    src/led_svc.c
     src/ble.c
 )

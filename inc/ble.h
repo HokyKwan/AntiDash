@@ -7,12 +7,6 @@
 #ifndef BLE_H
 #define BLE_H
 
-#include <stdint.h>
-
-struct ad_ble_cb {
-    void (*on_rgb)(uint8_t r, uint8_t g, uint8_t b);
-};
-
-int ad_ble_start(const struct ad_ble_cb *cb);
+int ad_ble_start(void);
 
 #endif
