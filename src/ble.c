@@ -20,7 +20,7 @@ static const struct bt_data ad[] = {
     BT_DATA(BT_DATA_NAME_COMPLETE, DEVICE_NAME, DEVICE_NAME_LEN),
 };
 
-int ad_ble_start(void)
+int ad_ble_init(void)
 {
     int err;
 

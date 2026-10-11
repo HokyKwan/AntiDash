@@ -7,6 +7,6 @@
 #ifndef BLE_H
 #define BLE_H
 
-int ad_ble_start(void);
+int ad_ble_init(void);
 
 #endif

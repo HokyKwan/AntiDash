@@ -13,4 +13,5 @@ target_sources(app PRIVATE
     src/led.c
     src/led_svc.c
     src/ble.c
+    src/rader.c
 )
