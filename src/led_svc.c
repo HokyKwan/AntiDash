@@ -7,7 +7,6 @@
 #include "led_svc.h"
 
 #include <errno.h>
-#include <string.h>
 
 #include <zephyr/bluetooth/gatt.h>
 #include <zephyr/bluetooth/uuid.h>
@@ -26,6 +25,8 @@ static const struct bt_uuid_128 led_rgb_uuid = BT_UUID_INIT_128(BT_UUID_LED_RGB_
 static uint8_t rgb[3];
 static struct ad_led_svc_cb led_cb;
 
+static int on_notify(uint8_t r, uint8_t g, uint8_t b);
+
 static ssize_t on_read(struct bt_conn *conn, const struct bt_gatt_attr *attr,
             void *buf, uint16_t len, uint16_t offset)
 {
@@ -36,7 +37,6 @@ static ssize_t on_write(struct bt_conn *conn, const struct bt_gatt_attr *attr,
              const void *buf, uint16_t len, uint16_t offset, uint8_t flags)
 {
     const uint8_t *data = buf;
-    int err;
 
     ARG_UNUSED(conn);
     ARG_UNUSED(attr);
@@ -50,17 +50,7 @@ static ssize_t on_write(struct bt_conn *conn, const struct bt_gatt_attr *attr,
         return BT_GATT_ERR(BT_ATT_ERR_INVALID_ATTRIBUTE_LEN);
     }
 
-    memcpy(rgb, data, sizeof(rgb));
-
-    if (led_cb.on_rgb != NULL) {
-        led_cb.on_rgb(rgb[0], rgb[1], rgb[2]);
-    }
-
-    err = bt_gatt_notify(NULL, attr, rgb, sizeof(rgb));
-    if ((err != 0) && (err != -ENOTCONN)) {
-        LOG_WRN("[LED SVC] notify failed (err %d)", err);
-    }
-
+    (void)on_notify(data[0], data[1], data[2]);
     return len;
 }
 
@@ -80,6 +70,37 @@ BT_GATT_SERVICE_DEFINE(led_svc,
     BT_GATT_CCC(on_ccc_cfg_changed, BT_GATT_PERM_READ | BT_GATT_PERM_WRITE),
 );
 
+static int on_notify(uint8_t r, uint8_t g, uint8_t b)
+{
+    const struct bt_gatt_attr *attr;
+    int err;
+
+    rgb[0] = r;
+    rgb[1] = g;
+    rgb[2] = b;
+
+    if (led_cb.on_rgb != NULL) {
+        led_cb.on_rgb(r, g, b);
+    }
+
+    attr = bt_gatt_find_by_uuid(led_svc.attrs, (uint16_t)led_svc.attr_count,
+                    &led_rgb_uuid.uuid);
+    if (attr == NULL) {
+        return -ENOENT;
+    }
+
+    err = bt_gatt_notify(NULL, attr, rgb, sizeof(rgb));
+    if (err == -ENOTCONN) {
+        return 0;
+    }
+
+    if (err != 0) {
+        LOG_WRN("[LED SVC] notify failed (err %d)", err);
+    }
+
+    return err;
+}
+
 int ad_led_svc_init(const struct ad_led_svc_cb *cb)
 {
     if (cb == NULL) {
@@ -88,4 +109,9 @@ int ad_led_svc_init(const struct ad_led_svc_cb *cb)
 
     led_cb = *cb;
     return 0;
+}
+
+int ad_led_svc_notify(uint8_t r, uint8_t g, uint8_t b)
+{
+    return on_notify(r, g, b);
 }
